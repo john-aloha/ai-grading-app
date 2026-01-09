@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  password_hash String?
+  created_at    DateTime     @default(now())
+  jobs          GradingJob[]
+}
+
+model GradingJob {
+  id                           String       @id @default(uuid())
+  user_id                      String
+  user                         User         @relation(fields: [user_id], references: [id])
+  title                        String
+  total_points                 Int
+  strictness                   String       @default("NORMAL")
+  assignment_instructions_text String
+  rubric_source                String       @default("GENERATED")
+  rubric_text                  String?
+  status                       String       @default("DRAFT")
+  created_at                   DateTime     @default(now())
+  updated_at                   DateTime     @updatedAt
+  submissions                  Submission[]
+}
+
+model Submission {
+  id                String       @id @default(uuid())
+  job_id            String
+  job               GradingJob   @relation(fields: [job_id], references: [id])
+  student_name      String
+  original_filename String?
+  file_uri          String?
+  extracted_text    String?
+  status            String       @default("PENDING")
+  error_message     String?
+  grade_result      GradeResult?
+  created_at        DateTime     @default(now())
+}
+
+model GradeResult {
+  id               String     @id @default(uuid())
+  submission_id    String     @unique
+  submission       Submission @relation(fields: [submission_id], references: [id])
+  score            Decimal
+  feedback         String
+  rubric_breakdown String?
+  model_metadata   String?
+  created_at       DateTime   @default(now())
+}
