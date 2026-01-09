@@ -18,8 +18,9 @@ ai_grading_app/
 │       ├── services/      # Business logic
 │       ├── queue/         # Job queue management
 │       └── workers/       # Background worker processes
+├── README.md              # User & Admin documentation
 ├── TASK.md               # Task description
-├── WALKTHROUGH.md        # This file
+├── WALKTHROUGH.md        # This file (codebase guide)
 └── IMPLEMENTATION_PLAN.md # Development roadmap
 ```
 
