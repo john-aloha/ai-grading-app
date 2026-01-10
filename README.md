@@ -64,7 +64,46 @@ The AI Grading App is a full-stack web application that helps educators save tim
 
 ## 🚀 Getting Started
 
-### Quick Start (Development)
+### Deployment Options
+
+**Choose your deployment method:**
+
+- **🐳 Docker (Recommended)** — Fully containerized, isolated, production-ready
+- **💻 Local Development** — Direct installation for development and testing
+
+---
+
+### Option 1: Docker Deployment (Recommended)
+
+**Perfect for production servers running multiple apps**
+
+```bash
+# Clone the repository
+git clone https://github.com/john-aloha/ai-grading-app.git
+cd ai-grading-app
+
+# Configure environment
+cp .env.example .env
+nano .env  # Add your OpenAI API key
+
+# Build and start with Docker Compose
+docker compose up -d
+
+# View logs
+docker compose logs -f
+```
+
+**Access the application:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001
+
+**For detailed Docker instructions, SSL setup, and production deployment, see [DOCKER.md](DOCKER.md)**
+
+---
+
+### Option 2: Local Development
+
+**For development and testing without Docker**
 
 ```bash
 # Clone the repository

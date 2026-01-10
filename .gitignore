@@ -34,3 +34,9 @@ uploads/
 
 # TypeScript
 *.tsbuildinfo
+
+# Docker
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
+!nginx/ssl/.gitkeep
