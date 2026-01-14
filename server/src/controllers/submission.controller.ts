@@ -132,3 +132,59 @@ export const getSubmissions = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Failed to fetch submissions' });
     }
 };
+
+export const getSubmissionPreview = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const submission = await prisma.submission.findUnique({
+            where: { id },
+            include: { grade_result: true }
+        });
+        if (!submission) return res.status(404).json({ error: 'Submission not found' });
+
+        // Return extracted text if available, otherwise try to extract it
+        let previewText = submission.extracted_text;
+        if (!previewText && submission.file_uri) {
+            const { extractText } = await import('../services/extraction.service');
+            try {
+                previewText = await extractText(submission.file_uri);
+                // Save for future use
+                await prisma.submission.update({
+                    where: { id },
+                    data: { extracted_text: previewText }
+                });
+            } catch (e) {
+                previewText = 'Unable to extract text from document.';
+            }
+        }
+
+        res.json({
+            id: submission.id,
+            student_name: submission.student_name,
+            original_filename: submission.original_filename,
+            extracted_text: previewText || 'No content available',
+            grade_result: submission.grade_result
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to get submission preview' });
+    }
+};
+
+export const updateSubmission = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { student_name } = req.body;
+
+        const submission = await prisma.submission.update({
+            where: { id },
+            data: { student_name },
+            include: { grade_result: true }
+        });
+
+        res.json(submission);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to update submission' });
+    }
+};

@@ -5,6 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+const GRADE_LEVELS = [
+    { value: 'pre-k', label: 'Pre-K' },
+    { value: 'k', label: 'Kindergarten' },
+    { value: '1', label: '1st Grade' },
+    { value: '2', label: '2nd Grade' },
+    { value: '3', label: '3rd Grade' },
+    { value: '4', label: '4th Grade' },
+    { value: '5', label: '5th Grade' },
+    { value: '6', label: '6th Grade' },
+    { value: '7', label: '7th Grade' },
+    { value: '8', label: '8th Grade' },
+    { value: '9', label: '9th Grade' },
+    { value: '10', label: '10th Grade' },
+    { value: '11', label: '11th Grade' },
+    { value: '12', label: '12th Grade' },
+];
+
 export default function CreateJobPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -12,6 +31,7 @@ export default function CreateJobPage() {
         title: '',
         total_points: 100,
         strictness: 'NORMAL',
+        grade_level: '6',
         assignment_instructions_text: '',
         rubric_text: ''
     });
@@ -20,7 +40,7 @@ export default function CreateJobPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await fetch('http://localhost:3001/api/jobs', {
+            const res = await fetch(`${API_URL}/api/jobs`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -31,7 +51,7 @@ export default function CreateJobPage() {
             if (!res.ok) throw new Error('Failed to create job');
 
             const job = await res.json();
-            router.push(`/jobs/${job.id}`); // Redirect to upload page (to be built)
+            router.push(`/jobs/${job.id}`);
         } catch (error) {
             alert('Error creating job');
             console.error(error);
@@ -58,7 +78,7 @@ export default function CreateJobPage() {
                     />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
                         <label className="text-sm font-medium leading-none">Total Points</label>
                         <Input
@@ -69,6 +89,20 @@ export default function CreateJobPage() {
                             value={formData.total_points}
                             onChange={(e) => setFormData({ ...formData, total_points: parseInt(e.target.value) })}
                         />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium leading-none">Grade Level</label>
+                        <select
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            value={formData.grade_level}
+                            onChange={(e) => setFormData({ ...formData, grade_level: e.target.value })}
+                        >
+                            {GRADE_LEVELS.map((grade) => (
+                                <option key={grade.value} value={grade.value}>
+                                    {grade.label}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium leading-none">Strictness</label>

@@ -1,0 +1,46 @@
+services:
+  grading-client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+      args:
+        - NEXT_PUBLIC_API_URL=https://apps.aloha.university/grading-api
+    container_name: grading-client
+    restart: unless-stopped
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grading-client.rule=Host(`apps.aloha.university`) && PathPrefix(`/grading`)"
+      - "traefik.http.routers.grading-client.entrypoints=websecure"
+      - "traefik.http.routers.grading-client.tls.certresolver=letsencrypt"
+      - "traefik.http.services.grading-client.loadbalancer.server.port=3000"
+
+  grading-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: grading-server
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=file:/app/data/dev.db
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - grading-data:/app/data
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grading-server.rule=Host(`apps.aloha.university`) && PathPrefix(`/grading-api`)"
+      - "traefik.http.routers.grading-server.entrypoints=websecure"
+      - "traefik.http.routers.grading-server.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.grading-server.middlewares=grading-server-strip"
+      - "traefik.http.middlewares.grading-server-strip.stripprefix.prefixes=/grading-api"
+      - "traefik.http.services.grading-server.loadbalancer.server.port=3001"
+
+volumes:
+  grading-data:
+
+networks:
+  web:
+    external: true

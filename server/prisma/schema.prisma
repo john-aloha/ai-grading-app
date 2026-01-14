@@ -22,6 +22,7 @@ model GradingJob {
   title                        String
   total_points                 Int
   strictness                   String       @default("NORMAL")
+  grade_level                  String       @default("6")
   assignment_instructions_text String
   rubric_source                String       @default("GENERATED")
   rubric_text                  String?

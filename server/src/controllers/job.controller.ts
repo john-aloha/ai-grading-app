@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export const createJob = async (req: Request, res: Response) => {
     try {
-        const { title, total_points, strictness, assignment_instructions_text, rubric_source, rubric_text } = req.body;
+        const { title, total_points, strictness, grade_level, assignment_instructions_text, rubric_source, rubric_text } = req.body;
         // For MVP, hardcode a user ID since we don't have auth yet.
         // In a real app, this comes from req.user
         let user = await prisma.user.findFirst();
@@ -21,6 +21,7 @@ export const createJob = async (req: Request, res: Response) => {
                 title,
                 total_points: Number(total_points),
                 strictness: strictness || 'NORMAL',
+                grade_level: grade_level || '6',
                 assignment_instructions_text,
                 rubric_source: rubric_source || 'GENERATED',
                 rubric_text,
@@ -66,5 +67,35 @@ export const getJobById = async (req: Request, res: Response) => {
         res.json(job);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch job' });
+    }
+};
+
+export const deleteJob = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        // First delete all grade results for this job's submissions
+        await prisma.gradeResult.deleteMany({
+            where: {
+                submission: {
+                    job_id: id
+                }
+            }
+        });
+
+        // Then delete all submissions for this job
+        await prisma.submission.deleteMany({
+            where: { job_id: id }
+        });
+
+        // Finally delete the job
+        await prisma.gradingJob.delete({
+            where: { id }
+        });
+
+        res.json({ message: 'Job deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to delete job' });
     }
 };

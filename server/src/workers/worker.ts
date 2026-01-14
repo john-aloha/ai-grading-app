@@ -1,6 +1,6 @@
 import { jobQueue, Job } from '../queue/jobQueue';
 import { PrismaClient } from '@prisma/client';
-import { extractText } from '../services/extraction.service';
+import { extractText, extractStudentName } from '../services/extraction.service';
 import { gradeSubmissionAI } from '../services/ai.service';
 
 const prisma = new PrismaClient();
@@ -34,10 +34,16 @@ jobQueue.on('process', async (job: Job) => {
             if (!text) {
                 try {
                     text = await extractText(submission.file_uri);
-                    // Save extracted text to avoid re-parsing
+                    // Try to extract student name from document
+                    const extractedName = extractStudentName(text);
+                    // Save extracted text and update name if found
                     await prisma.submission.update({
                         where: { id: submissionId },
-                        data: { extracted_text: text }
+                        data: {
+                            extracted_text: text,
+                            // Only update name if we found one and current name looks like a filename
+                            ...(extractedName && submission.student_name.includes('.') ? { student_name: extractedName } : {})
+                        }
                     });
                 } catch (extractError) {
                     throw new Error(`Extraction failed: ${extractError}`);
@@ -73,6 +79,19 @@ jobQueue.on('process', async (job: Job) => {
                 data: { status: 'GRADED' }
             });
             console.log(`[Worker] Successfully graded ${submissionId}`);
+
+            // Check if all submissions for this job are now graded
+            const jobSubmissions = await prisma.submission.findMany({
+                where: { job_id: submission.job_id }
+            });
+            const allGraded = jobSubmissions.every(s => s.status === 'GRADED' || s.status === 'FAILED');
+            if (allGraded) {
+                await prisma.gradingJob.update({
+                    where: { id: submission.job_id },
+                    data: { status: 'COMPLETED' }
+                });
+                console.log(`[Worker] Job ${submission.job_id} marked as COMPLETED`);
+            }
 
         } catch (error) {
             console.error(`[Worker] Failed grading ${submissionId}`, error);

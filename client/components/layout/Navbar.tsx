@@ -18,12 +18,11 @@ export function Navbar() {
                     <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                         Dashboard
                     </Link>
-                    <Link href="/jobs" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                        Jobs
+                    <Link href="/jobs/new">
+                        <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700">
+                            Get Started
+                        </Button>
                     </Link>
-                    <Button size="sm" className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700">
-                        Get Started
-                    </Button>
                 </div>
             </div>
         </motion.nav>

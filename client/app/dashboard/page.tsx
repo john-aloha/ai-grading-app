@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
 async function getJobs() {
     try {
-        const res = await fetch('http://localhost:3001/api/jobs', { cache: 'no-store' });
+        const res = await fetch(`${API_URL}/api/jobs`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Failed to fetch jobs');
         return res.json();
     } catch (e) {
